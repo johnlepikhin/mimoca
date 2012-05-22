@@ -108,16 +108,16 @@ let transfer_decode hdrs body =
 
 let get_content_type =
 	let lst = [
-		(Pcre.regexp "(text/[^;]+);\\s+charset=\"?([a-zA-Z0-9_-]+)\"?"),
+		(Pcre.regexp ~flags:[`CASELESS] "(text/[^;]+);\\s+charset=\"?([a-zA-Z0-9_-]+)\"?"),
 		(fun s1 s2 ->
 			let s2 = String.lowercase s2 in
 			ContentType.Text (s1, s2)
 		);
-		(Pcre.regexp "(image/[^;]+);\\s+name=\"?([^\"]+)\"?"),
+		(Pcre.regexp ~flags:[`CASELESS] "(image/[^;]+);\\s+name=\"?([^\"]+)\"?"),
 		(fun s1 s2 ->
 			ContentType.Image (s1, s2)
 		);
-		(Pcre.regexp "(multipart/[^;]+);\\s+boundary=\"?([^\"]+)\"?"),
+		(Pcre.regexp ~flags:[`CASELESS] "(multipart/[^;]+);\\s+boundary=\"?([^\"]+)\"?"),
 		(fun s1 s2 ->
 			ContentType.MultiPart (s1, s2)
 		);
