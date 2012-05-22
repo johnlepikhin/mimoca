@@ -156,7 +156,9 @@ let utf8_of_string charset s =
 			| "koi8-r" ->
 				Charset_koi8r.string_to_utf8
 			| "utf8"
-			| "utf-8" ->
+			| "utf-8"
+			| "iso-8859-1"
+			| "latin1" ->
 				(fun s -> s)
 			| c ->
 				raise (failwith ("Unknown charset: " ^ c))
@@ -165,25 +167,38 @@ let utf8_of_string charset s =
 
 let decoded_header =
 	let rex = Pcre.regexp "^=\\?([^\\?]+)\\?(.)\\?([^\\?]+)\\?=" in
+	let split_rex = Pcre.regexp "\n" in
 	fun hdrs name ->
+		let r = Buffer.create 4000 in
+		let rec loop = function
+			| [] -> ()
+			| hd :: tl ->
+				let part =
+					try
+						let sub = Pcre.exec ~rex hd in
+						let charset = Pcre.get_substring sub 1 in
+						let enc = Pcre.get_substring sub 2 in
+						let cont = Pcre.get_substring sub 3 in
+						let charset = String.lowercase charset in
+						let enc = String.lowercase enc in
+						let decode =
+						match enc with
+								| "b" -> Base64.decode
+								| "q" -> Qprintable.decode
+								| _ -> raise (failwith ("Unknown header encoder: " ^ enc))
+						in
+						let cont = decode cont in
+						utf8_of_string charset cont
+					with
+						| _ -> hd
+				in
+				Buffer.add_string r part;
+				loop tl
+		in
 		let v = get_header name hdrs in
-		try
-			let sub = Pcre.exec ~rex v in
-			let charset = Pcre.get_substring sub 1 in
-			let enc = Pcre.get_substring sub 2 in
-			let cont = Pcre.get_substring sub 3 in
-			let charset = String.lowercase charset in
-			let enc = String.lowercase enc in
-			let decode =
-				match enc with
-					| "b" -> Base64.decode
-					| "q" -> Qprintable.decode
-					| _ -> raise (failwith ("Unknown header encoder: " ^ enc))
-			in
-			let cont = decode cont in
-			utf8_of_string charset cont
-		with
-			| _ -> v
+		let lst = Pcre.split ~rex:split_rex v in
+		loop lst;
+		Buffer.contents r
 
 let get_parts ch boundary =
 	let boundary = "--" ^ boundary in
