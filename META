@@ -1,0 +1,7 @@
+name="mimoca"
+version="1.0"
+description="Minimalistic e-mail parsting library"
+requires="lwt,lwt.unix,lwt.syntax"
+archive(byte)="mimoca.cma"
+archive(native)="mimoca.cmxa"
+linkopts = ""
