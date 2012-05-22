@@ -1,4 +1,6 @@
 
+type header = string * string
+
 type content =
 	| Text of string
 	| Image of (string * string)
@@ -9,7 +11,7 @@ type entry =
 	| Unknown of string
 
 and t = {
-	headers : (string * string) list;
+	headers : header list;
 	content_type : string;
 	entry : entry;
 }
@@ -160,6 +162,28 @@ let utf8_of_string charset s =
 	in
 	decode s
 
+let decoded_header =
+	let rex = Pcre.regexp "^=\\?([^\\?]+)\\?(.)\\?([^\\?]+)\\?=" in
+	fun hdrs name ->
+		let v = get_header name hdrs in
+		try
+			let sub = Pcre.exec ~rex v in
+			let charset = Pcre.get_substring sub 1 in
+			let enc = Pcre.get_substring sub 2 in
+			let cont = Pcre.get_substring sub 3 in
+			let charset = String.lowercase charset in
+			let enc = String.lowercase enc in
+			let decode =
+				match enc with
+					| "b" -> Base64.decode
+					| "q" -> Qprintable.decode
+					| _ -> raise (failwith ("Unknown header encoder: " ^ enc))
+			in
+			let cont = decode cont in
+			utf8_of_string charset cont
+		with
+			| _ -> v
+
 let get_parts ch boundary =
 	let boundary = "--" ^ boundary in
 	let boundary_end = boundary ^ "--" in
@@ -254,22 +278,3 @@ let rec of_channel ch =
 				entry = Unknown body;
 			} in
 			Lwt.return r
-(*
-let rec out_mime t =
-	match t.entry with
-		| Content (Text t) ->
-			print_endline "--- BEGIN --------------------------------------------";
-			print_endline t;
-			print_endline "--- END ----------------------------------------------";
-		| Content (Image (t, name)) ->
-			print_endline "--- BEGIN --------------------------------------------";
-			print_endline name;
-			print_endline "--- END ----------------------------------------------";
-		| Parts lst ->
-			print_endline "=== PARTS ============================================";
-			List.iter out_mime lst;
-			print_endline "=== PARTS END ========================================"
-		| Unknown u ->
-			print_endline u
-*)
-
