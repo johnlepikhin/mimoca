@@ -71,6 +71,7 @@ let read_headers =
 					| _ ->
 						let sub = Pcre.exec ~rex:rex_tl line in
 						let hv = Pcre.get_substring sub 1 in
+						Buffer.add_char v '\n';
 						Buffer.add_string v hv;
 						loop ()
 			end
