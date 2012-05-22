@@ -1,7 +1,7 @@
 mimoca
 ======
 
-Minimalistic e-mail parsting library for OCaml.
+Minimalistic e-mail parsing library for OCaml.
 
 Depends on Lwt.
 
