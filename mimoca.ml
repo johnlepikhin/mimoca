@@ -3,7 +3,7 @@ type header = string * string
 
 type content =
 	| Text of string
-	| Image of (string * string)
+	| Image of (string * string * string)
 
 type entry =
 	| Content of content
@@ -269,7 +269,7 @@ let rec of_channel ch =
 			let r = {
 				headers = hdrs;
 				content_type = ctype;
-				entry = Content (Image (body, name));
+				entry = Content (Image (ctype, body, name));
 			} in
 			Lwt.return r
 		| ContentType.MultiPart (ctype, boundary) ->

@@ -3,7 +3,7 @@ type header = string * string
 
 type content =
 	| Text of string
-	| Image of (string * string)
+	| Image of (string * string * string)
 
 type entry =
 	| Content of content
