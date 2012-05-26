@@ -38,3 +38,36 @@ let decode s =
 	loop 0 0 0;
 	Buffer.contents r
 
+let encode s =
+	let l = String.length s in
+	let r = Buffer.create (l*2) in
+	let rec drop buf = function
+		| 4 -> 0
+		| n ->
+			let c = chars.[(buf lsr (6*(3-n))) land 0b111111] in
+			Buffer.add_char r c;
+			drop buf (n+1)
+	in
+	let rec loop buf pos =
+		let bpos = pos mod 3 in
+		if pos < l then
+		begin
+			let buf = buf + ((Char.code s.[pos]) lsl ((2-bpos) * 8)) in
+			if bpos = 2 then
+				loop (drop buf 0) (pos+1)
+			else
+				loop buf (pos+1)
+		end
+		else
+			if bpos > 0 then
+			begin
+				for i=0 to bpos do
+					let c = chars.[(buf lsr (6*(3-i))) land 0b111111] in
+					Buffer.add_char r c;
+				done;
+				Buffer.add_string r (String.make (3-bpos) echar)
+			end
+			else ()
+	in
+	loop 0 0;
+	Buffer.contents r

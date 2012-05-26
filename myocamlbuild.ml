@@ -1,6 +1,18 @@
 open Ocamlbuild_plugin
 
-let files = ["META"; "mimoca.cmxa"; "mimoca.cma"; "mimoca.mli"; "mimoca.a"; "mimoca.cmi"]
+let files = [
+	"META";
+	"mimoca.cmxa";
+	"mimoca.cma";
+	"mimoca.mli";
+	"mimoca.a";
+	"mimoca.cmi";
+	"base64.cmxa";
+	"base64.cma";
+	"base64.mli";
+	"base64.a";
+	"base64.cmi";
+]
 
 let syntaxes = [ "camlp4o"; "camlp4r"; "camlp5o"; "camlp5r" ]
 
