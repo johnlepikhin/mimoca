@@ -71,3 +71,18 @@ let encode s =
 	in
 	loop 0 0;
 	Buffer.contents r
+
+let encode_body =
+	let limit = 78 in
+	fun s ->
+		let s = encode s in
+		let l = String.length s in
+		let r = Buffer.create l in
+		for i=0 to l/limit do
+			let pos = i*limit in
+			let len = if pos + limit < l then limit else l-pos in
+			Buffer.add_substring r s (i*limit) len;
+			Buffer.add_char r '\n';
+		done;
+		Buffer.contents r
+
