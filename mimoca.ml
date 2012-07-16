@@ -97,14 +97,17 @@ let read_body ch =
 	Lwt.return r
 
 let transfer_decode hdrs body =
-	let enc = get_header "Content-Transfer-Encoding" hdrs in
-	let decode =
-		match String.lowercase enc with
-			| "base64" -> Base64.decode
-			| "quoted-printable" -> Qprintable.decode
-			| enc -> raise (failwith ("Unknown transfer encoding: " ^ enc))
-	in
-	decode body
+	try
+		let enc = get_header "Content-Transfer-Encoding" hdrs in
+		let decode =
+			match String.lowercase enc with
+				| "base64" -> Base64.decode
+				| "quoted-printable" -> Qprintable.decode
+				| enc -> raise (failwith ("Unknown transfer encoding: " ^ enc))
+		in
+		decode body
+	with
+		| _ -> body
 
 let get_content_type =
 	let lst = [
